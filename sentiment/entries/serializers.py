@@ -1,14 +1,16 @@
 from entries.models import Entry
 from rest_framework import serializers
+from persons.simple_serializers import SimplePersonSerializer
 
 class EntrySerializer(serializers.ModelSerializer):
+    poster = SimplePersonSerializer()
+
     class Meta:
         model = Entry
         fields = (
             "id",
+            "poster",
             "entry_description",
-            # "first_name",
-            # "last_name",
             "emotion",
         )
         read_only_fields = fields
