@@ -200,3 +200,37 @@ trainer.evaluate()
 trainer.train()
 
 
+
+
+
+
+############################################################################################
+# Choosing Weights for the Three Algorithms
+
+# Initialize weights of all three algorithms to 1/3
+# Run all three algorithms
+# Multiply the results of each algorithm by the weights and add everything together
+# Truncate to the top three results
+
+# Store User's sentence and output as (x,y)
+
+# After user decides between the top three, change the weights of the algorithm
+# Initialize hyperparameters x, y with x > y that represents the weight of top two selected emotions (both x and y are less than 1, x + y = 1)
+# For the algorithm that had the highest proportion of the top emotion, increase weight of the algorithm by its (weight of the top "emotion"
+# - average of the emotion of the three algorithms) multiplied by x and (1-weight) 
+# (i.e. if 0.5 of happy came from this algorithm, after first iteration, with total happy of 0.9, 
+# increase weight by ((0.5-0.3) * 2/3 * x)
+# if the difference between the average and the value is negative, then instead multiply by weight of model rather than 1 - weight
+# Do the same for the two other algorithms
+# Reweigh all algorithms on a scale of 0 to 1 by dividing by sum and multiplying by 3
+
+# Do the same for B
+# Create variables representing the proportion of weight relative to each 
+# For each of the three emotions, multiply the previous hyperparameters (a, b, c) by 
+
+
+# If frequent miscategorization, potentially switch to scheme where weights of algorithms are dependent on previous predictions of top emotions
+# (i.e. if one category usually predicts sad, and the user constantly says we are predicting wrong, then we switch to a higher weight of sad predictor)
+# Potentially decrease x, y once there is more information?
+
+
