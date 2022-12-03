@@ -11,7 +11,6 @@ class SimplePersonSerializer(serializers.ModelSerializer):
         model = Person
         fields = (
             "id",
-            "netid",
             "first_name",
             "last_name",
             "profile_pic_url",
