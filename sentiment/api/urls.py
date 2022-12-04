@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("entries/", EntriesView.as_view(), name="entries"),
     path("entries/<int:id>/", EntryView.as_view(), name="entry"),
-    path("entries/date/<int:id>/", DateEntryView.as_view(), name="entry"),
+    path("entries/user/<int:id>/", DateEntryView.as_view(), name="entry"),
     path("authenticate/", AuthenticateView.as_view(), name="authenticate"),
     path("dev/", DeveloperView.as_view(), name="dev"),
     path("me/", MeView.as_view(), name="me"),

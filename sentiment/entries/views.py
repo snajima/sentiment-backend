@@ -9,6 +9,7 @@ from rest_framework import status
 from .serializers import EntrySerializer
 from .controllers.create_entry_controller import CreateEntryController
 from .controllers.get_date_entries_controller import GetDateEntryController
+from .controllers.get_person_entries_controller import GetPersonEntryController
 from .models import Entry
 
 class EntriesView(generics.GenericAPIView):
@@ -48,13 +49,19 @@ class DateEntryView(generics.GenericAPIView):
     queryset = Entry.objects
     serializer_class = EntrySerializer
 
-    def get(self, request, id):
+    def post(self, request, id):
         """
-        Get entry by user id and date
+        Get entry by user id
         """
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
             data = request.data
 
-        return GetDateEntryController(data, request, self.serializer_class, id).process()
+        return 
+
+    def get(self, request, id):
+        """
+        Get entry by user id and date
+        """
+        return GetPersonEntryController(request, self.serializer_class, id).process()

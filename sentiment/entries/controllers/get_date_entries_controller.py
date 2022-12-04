@@ -24,5 +24,9 @@ class GetDateEntryController:
         if not Person.objects.filter(id=int(self._id)).exists():
             return failure_response("Person does not exist")
         poster = Person.objects.get(id=self._id)
-        entries = Entry.objects.get(poster=poster, date=date)
-        return success_response(self._serializer(entries).data, 200)
+
+        if not Entry.objects.filter(poster=poster, date=date).exists():
+            return failure_response("Entry does not exist")
+        entry = Entry.objects.get(poster=poster, date=date)
+
+        return success_response(self._serializer(entry).data, 200)
