@@ -13,8 +13,5 @@ class SimplePersonSerializer(serializers.ModelSerializer):
             "id",
             "first_name",
             "last_name",
-            "profile_pic_url",
-            "grade",
-            "pronouns",
         )
         read_only_fields = fields

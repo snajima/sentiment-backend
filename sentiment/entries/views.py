@@ -9,6 +9,7 @@ from rest_framework import status
 from .serializers import EntrySerializer
 from .controllers.create_entry_controller import CreateEntryController
 from .controllers.get_date_entries_controller import GetDateEntryController
+from .controllers.get_range_entries_controller import GetRangeEntryController
 from .controllers.get_person_entries_controller import GetPersonEntryController
 from .models import Entry
 
@@ -51,17 +52,32 @@ class DateEntryView(generics.GenericAPIView):
 
     def post(self, request, id):
         """
-        Get entry by user id
+        Get entry by user id and date
         """
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
             data = request.data
 
-        return 
+        return GetDateEntryController(data, request, self.serializer_class, id).process()
 
     def get(self, request, id):
         """
-        Get entry by user id and date
+        Get entry by user id
         """
         return GetPersonEntryController(request, self.serializer_class, id).process()
+
+class RangeEntryView(generics.GenericAPIView):
+    queryset = Entry.objects
+    serializer_class = EntrySerializer
+
+    def post(self, request, id):
+        """
+        Get emotion distributions of entries by user id and dates
+        """
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            data = request.data
+
+        return GetRangeEntryController(data, request, self.serializer_class, id).process()
