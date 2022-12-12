@@ -46,7 +46,7 @@ class AuthenticateController:
 
     def create_token_info(self, token_info):
         """Create token info for app based on Google `token_info`."""
-        username = token_info.get("email")
+        username = token_info.get("email").split("@")[0]
         google_user_id = token_info.get("sub")
         password = api_settings.AUTH_PASSWORD_SALT + google_user_id
         first_name = token_info.get("given_name")

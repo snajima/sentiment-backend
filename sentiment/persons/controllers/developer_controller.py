@@ -31,13 +31,13 @@ class DeveloperController:
         if self._user_id is None:
             user_data = {
                 "username": self._data.get("username"),
-                "email": self._data.get("username"),
+                "email": self._data.get("email"),
                 "password": self._data.get("password"),
                 "first_name": self._data.get("first_name"),
                 "last_name": self._data.get("last_name"),
             }
             user = self.create_user(user_data)
-            person_data = {"user": user, "netid": self._data.get("netid")}
+            person_data = {"user": user}
             self.create_person(person_data)
             status_code = status.HTTP_201_CREATED
         else:

@@ -9,3 +9,4 @@ class Entry(models.Model):
     )
     entry_description = models.TextField(default=None)
     emotion = models.CharField(max_length=20, default=None)
+    date = models.DateField(null=False)

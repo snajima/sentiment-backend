@@ -12,5 +12,6 @@ class EntrySerializer(serializers.ModelSerializer):
             "poster",
             "entry_description",
             "emotion",
+            "date"
         )
         read_only_fields = fields
