@@ -9,5 +9,5 @@ class EntriesConfig(AppConfig):
 
     def ready(self):
         global emotion_model
-        emotion_model = pipeline('sentiment-analysis', 
-                            model='arpanghoshal/EmoRoBERTa')
+        # emotion_model = pipeline('sentiment-analysis', 
+        #                     model='arpanghoshal/EmoRoBERTa')

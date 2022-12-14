@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 
 from ..models import Entry
 from ..models import Person
-from ..apps import emotion_model
 
 class GetDateEntryController:
     def __init__(self, data, request, serializer, id):

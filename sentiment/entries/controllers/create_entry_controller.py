@@ -8,7 +8,7 @@ from rest_framework import status
 from persons.models import Person
 
 from ..models import Entry
-from ..apps import emotion_model
+from .algorithm.algorithm import top_labels
 
 class CreateEntryController:
     def __init__(self, request, data, serializer):
@@ -43,7 +43,7 @@ class CreateEntryController:
                 poster=poster,
                 date=date,
                 entry_description=entry_description,
-                emotion=emotion if emotion is not None else emotion_model(entry_description)[0].get('label')
+                emotion=emotion if emotion is not None else top_labels(entry_description)
             )
             return success_response(self._serializer(entry).data, status.HTTP_201_CREATED)
         else:
@@ -51,7 +51,7 @@ class CreateEntryController:
             
             if entry_description is not None:
                 update(entry, "entry_description", entry_description)
-                update(entry, "emotion", emotion_model(entry_description)[0].get('label'))
+                update(entry, "emotion", top_labels(entry_description))
             update(entry, "emotion", emotion)
         entry.save()
 
