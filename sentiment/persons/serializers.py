@@ -19,9 +19,6 @@ class AuthenticateSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    netid = serializers.CharField(source="person.netid")
-    grade = serializers.CharField(source="person.grade")
-    pronouns = serializers.CharField(source="person.pronouns")
     profile_pic_url = serializers.CharField(source="person.profile_pic_url")
     phone_number = serializers.CharField(source="person.phone_number")
 
@@ -29,12 +26,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             "id",
-            "netid",
             "first_name",
             "last_name",
             "phone_number",
-            "grade",
             "profile_pic_url",
-            "pronouns",
         )
         read_only_fields = fields

@@ -46,14 +46,13 @@ class AuthenticateController:
 
     def create_token_info(self, token_info):
         """Create token info for app based on Google `token_info`."""
-        username = token_info.get("email").split("@")[0]
+        username = token_info.get("email")
         google_user_id = token_info.get("sub")
         password = api_settings.AUTH_PASSWORD_SALT + google_user_id
         first_name = token_info.get("given_name")
         last_name = token_info.get("family_name")
         profile_pic_url = token_info.get("picture")
-        netid = token_info.get("email").split("@")[0]
-        return netid, username, password, first_name, last_name, profile_pic_url
+        return username, password, first_name, last_name, profile_pic_url
 
     def get_token_info(self, token):
         """Returns token information if `token` is valid."""
@@ -64,14 +63,14 @@ class AuthenticateController:
 
     def login(self, token_info):
         """Logs user in given `token_info`. If user does not exist, registers new one."""
-        netid, username, password, _, _, _ = self.create_token_info(token_info)
-        person_exists = Person.objects.filter(netid=netid).exists()
-        if not person_exists:
+        username, password, _, _, _ = self.create_token_info(token_info)
+        user_exists = User.objects.filter(username=username).exists()
+        if not user_exists:
             self.register(token_info)
         user, auth_status = self.authenticate(username, password)
         return (
             user,
-            status.HTTP_201_CREATED if not person_exists else auth_status,
+            status.HTTP_201_CREATED if not user_exists else auth_status,
         )
 
     def process(self):
@@ -104,7 +103,6 @@ class AuthenticateController:
     def register(self, token_info):
         """Registers new account given `token_info`."""
         (
-            netid,
             username,
             password,
             first_name,
@@ -119,5 +117,5 @@ class AuthenticateController:
             "last_name": last_name,
         }
         user = self.create_user(user_data)
-        person_data = {"user": user, "netid": netid, "profile_pic_url": profile_pic_url}
+        person_data = {"user": user, "profile_pic_url": profile_pic_url}
         self.create_person(person_data)
