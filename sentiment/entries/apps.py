@@ -9,8 +9,5 @@ class EntriesConfig(AppConfig):
 
     def ready(self):
         global emotion_model
-        tokenizer = RobertaTokenizerFast.from_pretrained("arpanghoshal/EmoRoBERTa")
-        model = TFRobertaForSequenceClassification.from_pretrained("arpanghoshal/EmoRoBERTa")
-
         emotion_model = pipeline('sentiment-analysis', 
                             model='arpanghoshal/EmoRoBERTa')

@@ -36,4 +36,4 @@ class GetRangeEntryController:
         for emotion in emotion_distributions:
             emotion_distributions[emotion] = emotion_distributions[emotion] / len(entries)
 
-        return success_response(emotion_distributions, 200)
+        return success_response(dict(sorted(emotion_distributions.items(), key=lambda item: item[1], reverse=True)), 200)
