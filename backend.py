@@ -113,6 +113,15 @@ model_1 = "distilbert-base-uncased"
 tokenizer_1 = AutoTokenizer.from_pretrained(model_1)
 tokenizer_2 = preprocessing.text.Tokenizer(num_words=num_words)
 top_guess_count = 0
+# Initialize weights of all three algorithms to 1/3
+alg1_w = alg2_w = alg3_w = 1/3
+model_path_1 = "./models/algo_1"
+model_path_2 = "./models/algo_2"
+model_path_3 = "./models/algo_3"
+alg1_res = []
+alg2_res = []
+alg3_res = []
+top_ordered = []
 
 ########################### 2/ INTIALIZING DATAFRAME ###########################
 def intialization():
@@ -291,9 +300,9 @@ def run_algorithm_1(model_path, txt):
     sigmoid = torch.nn.Sigmoid()
     probs = sigmoid(logits.squeeze().cpu())
     probs_lst = probs.detach().numpy()
-    sort_index = np.argsort(-probs_lst)
-    predicted_labels = [id2label[str(idx)] for idx in sort_index]
-    return predicted_labels, probs_lst
+    # sort_index = np.argsort(-probs_lst)
+    # predicted_labels = [id2label[str(idx)] for idx in sort_index]
+    return probs_lst
 
 ########################### Prediction Algorithm 2/3 ###########################
 ## model_path is string name of where model is saved
@@ -312,10 +321,10 @@ def run_algorithm_2_3(model_path, txt, num_words, input_length):
 
     # Returning list of emotions ranked from most to least probable emotion
     probs_lst = model.predict(pad_txt)
-    sort_index = np.argsort(-probs_lst[0])
-    list(filter(None, sort_index))
-    predicted_labels = [id2label[str(idx)] for idx in sort_index]
-    return predicted_labels, probs_lst
+    # sort_index = np.argsort(-probs_lst[0])
+    # list(filter(None, sort_index))
+    # predicted_labels = [id2label[str(idx)] for idx in sort_index]
+    return probs_lst
 
 ####################### 5/ ADDING USER DATA TO DATAFRAME #######################
 # df is dataframe
@@ -369,37 +378,40 @@ if __name__ == "__main__":
 
 # Labels to output for user
  
-# Initialize weights of all three algorithms to 1/3
-alg1_w = alg2_w = alg3_w = 1/3
- 
-# Initialize weights of all three algorithms to 1/3
-def update_weights():
-    # Run all three algorithms
-    _, alg1_res = run_algorithm_1(model_path_1, txt)
-    _, alg2_res = run_algorithm_2_3(
+def top_label(txt):
+     # Run all three algorithms
+    global alg1_res
+    global alg2_res
+    global alg3_res
+    global top_ordered
+    alg1_res = run_algorithm_1(model_path_1, txt)
+    alg2_res = run_algorithm_2_3(
         model_path_2, txt, num_words, input_length)
-    _, alg3_res = run_algorithm_2_3(
+    alg3_res = run_algorithm_2_3(
         model_path_3, txt, num_words, input_length)
     # Multiply the results of each algorithm by the weights and add everything together
     # Truncate to the top three results
     alg_cum = alg1_w * alg1_res + alg2_w * alg2_res + alg3_w * alg3_res
-    top_three = sorted(alg_cum, key= lambda i: i[1], reverse=True)[0:3]
+    top_ordered = sorted(alg_cum, key= lambda i: i[1], reverse=True)
     # Store User's sentence and output as (x,y)
     # Need help here from @Shungo
-    top_labels = [label_cols[top_three[0][0]], label_cols[top_three[1][0]]], label_cols[top_three[2][0]]
-    choice = input(f"Choose between: {top_labels[0]}, {top_labels[1]}, and {top_labels[2]}")
-    # Give user the ability to pick one of three, let us decide, or do custom input:
-    if choice == '':
-        return alg1_w, alg2_w, alg3_w
-    # After user decides between the top three, change the weights of the algorithm
-    # Initialize hyperparameters x that represents the weight of the top emotion (x < 1)
-    top_w = 0.9
+    top_label = label_cols[top_ordered[0][0]]
+    return top_label
+
+def update_weights(emotion):
+    # Multiply the results of each algorithm by the weights and add everything together
+    # Truncate to the top three results
+    global alg1_w
+    global alg2_w
+    global alg3_w
+    # Store User's sentence and output as (x,y)
+    top_w = 1
     # For the algorithm that had the highest amount of the top emotion, increase weight of the algorithm by its (weight of the top "emotion"
     # - average of the emotion of the three algorithms) multiplied by x and (1-weight)
     # (i.e. if 0.5 of happy came from this algorithm, after first iteration, with total happy of 0.9,
     # increase weight by ((0.5-0.3) * 2/3 * x)
-    if choice in top_labels:
-        choice_index = label_cols.index(choice)
+    if emotion in label_cols:
+        choice_index = label_cols.index(emotion)
         choice_alg1 = alg1_res[choice_index]
         choice_alg2 = alg2_res[choice_index]
         choice_alg3 = alg3_res[choice_index]
@@ -408,15 +420,18 @@ def update_weights():
         # To combat this, set max between 0.05 (obtained through testing on Excel) and calculation
         # Need to set caps for algorithms such that no algorithm will remain dead despite being top choice
         # Through testing, observed that 0.05 was a good limit such that a new algorithm may become top within a week given right conditions
-        choice_val1 = max(0.05, (choice_val1 - choice_avg) * top_w * alg1_w * (1 - alg1_w))
-        choice_val2 = max(0.05, (choice_val2 - choice_avg) * top_w * alg2_w * (1 - alg2_w))
-        choice_val3 = max(0.05, (choice_val3 - choice_avg) * top_w * alg3_w * (1 - alg3_w))
+        choice_val1 = max(0.05, (choice_alg1 - choice_avg) * top_w * alg1_w * (1 - alg1_w))
+        choice_val2 = max(0.05, (choice_alg2 - choice_avg) * top_w * alg2_w * (1 - alg2_w))
+        choice_val3 = max(0.05, (choice_alg3 - choice_avg) * top_w * alg3_w * (1 - alg3_w))
         choice_val_sum = choice_val1 + choice_val2 + choice_val3
         # Performing a hard reset of values is not optimal, and using momentum could lead to massive overshooting
         # Do the same for the two other algorithms
         # Reweigh all algorithms on a scale of 0 to 1 by dividing by sum and multiplying by 3
-        choice_val1 = choice_val1 / choice_val_sum
-        choice_val2 = choice_val2 / choice_val_sum
-        choice_val3 = choice_val3  / choice_val_sum
-        return choice_val1, choice_val2, choice_val3
-    return alg1_w, alg2_w, alg3_w
+        alg1_w = choice_val1 / choice_val_sum
+        alg2_w = choice_val2 / choice_val_sum
+        alg3_w = choice_val3  / choice_val_sum
+        choice_val1, choice_val2, choice_val3
+    return
+
+    # Function that returns top three emotions
+    # Function that reweighs based on chosen emotion
