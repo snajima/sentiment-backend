@@ -118,10 +118,6 @@ alg1_w = alg2_w = alg3_w = 1/3
 model_path_1 = "./models/algo_1"
 model_path_2 = "./models/algo_2"
 model_path_3 = "./models/algo_3"
-alg1_res = []
-alg2_res = []
-alg3_res = []
-top_ordered = []
 
 ########################### 2/ INTIALIZING DATAFRAME ###########################
 def intialization():
@@ -378,12 +374,8 @@ if __name__ == "__main__":
 
 # Labels to output for user
  
-def top_label(txt):
+def top_labels(txt):
      # Run all three algorithms
-    global alg1_res
-    global alg2_res
-    global alg3_res
-    global top_ordered
     alg1_res = run_algorithm_1(model_path_1, txt)
     alg2_res = run_algorithm_2_3(
         model_path_2, txt, num_words, input_length)
@@ -404,6 +396,10 @@ def update_weights(emotion):
     global alg1_w
     global alg2_w
     global alg3_w
+
+    alg1_res = run_algorithm_1(model_path_1, txt)
+    alg2_res = run_algorithm_2_3(model_path_2, txt, num_words, input_length)
+    alg3_res = run_algorithm_2_3(model_path_3, txt, num_words, input_length)
     # Store User's sentence and output as (x,y)
     top_w = 1
     # For the algorithm that had the highest amount of the top emotion, increase weight of the algorithm by its (weight of the top "emotion"
