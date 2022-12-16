@@ -379,28 +379,16 @@ if __name__ == "__main__":
  
 def top_labels(txt):
      # Run all three algorithms
-    # alg1_res = run_algorithm_1(model_path_1, txt)
-    alg2_res = run_algorithm_2_3(
-        model_path_2, txt, num_words, input_length)
+    alg1_res = run_algorithm_1(model_path_1, txt) * -1
+    # alg2_res = run_algorithm_2_3(
+    #     model_path_2, txt, num_words, input_length)
     # alg3_res = run_algorithm_2_3(
     #     model_path_3, txt, num_words, input_length)
-    # print(alg1_res)
-    # print(type(alg1_res))
-    # print(alg2_res)
-    # print(type(alg2_res))
-    # print(alg3_res)
-    # print(type(alg3_res))
     # Multiply the results of each algorithm by the weights and add everything together
-    # Truncate to the top three results
     # alg_cum = (alg1_w * alg1_res + alg2_w * alg2_res + alg3_w * alg3_res) * -1
-    # print(alg_cum)
     # top_ordered = np.argsort(alg_cum)
-    # print(top_ordered)
-    # Store User's sentence and output as (x,y)
-    # Need help here from @Shungo
-    top_ordered = np.argsort(alg2_res)
-    top_label = label_cols[top_ordered[0]]
-    # print(top_label)
+    top_ordered = np.argsort(alg1_res)
+    top_label = label_cols[int(top_ordered[0])]
     return top_label
 
 def update_weights(emotion, txt):
@@ -424,22 +412,32 @@ def update_weights(emotion, txt):
         choice_alg1 = alg1_res[choice_index]
         choice_alg2 = alg2_res[choice_index]
         choice_alg3 = alg3_res[choice_index]
-        choice_avg = sum(choice_alg1, choice_alg2, choice_alg3)/3
+        choice_avg = (choice_alg1 + choice_alg2 + choice_alg3)/3
         # Observed through random assignment, there was eventually convergence to one value despite none technically being best
         # To combat this, set max between 0.05 (obtained through testing on Excel) and calculation
         # Need to set caps for algorithms such that no algorithm will remain dead despite being top choice
         # Through testing, observed that 0.05 was a good limit such that a new algorithm may become top within a week given right conditions
-        choice_val1 = max(0.05, (choice_alg1 - choice_avg) * top_w * alg1_w * (1 - alg1_w))
-        choice_val2 = max(0.05, (choice_alg2 - choice_avg) * top_w * alg2_w * (1 - alg2_w))
-        choice_val3 = max(0.05, (choice_alg3 - choice_avg) * top_w * alg3_w * (1 - alg3_w))
-        choice_val_sum = choice_val1 + choice_val2 + choice_val3
+        choice_val1 = (choice_alg1 - choice_avg) * top_w * alg1_w * (1 - alg1_w)
+        choice_val2 = (choice_alg2 - choice_avg) * top_w * alg2_w * (1 - alg2_w)
+        choice_val3 = (choice_alg3 - choice_avg) * top_w * alg3_w * (1 - alg3_w)
         # Performing a hard reset of values is not optimal, and using momentum could lead to massive overshooting
         # Do the same for the two other algorithms
         # Reweigh all algorithms on a scale of 0 to 1 by dividing by sum and multiplying by 3
-        alg1_w = choice_val1 / choice_val_sum
-        alg2_w = choice_val2 / choice_val_sum
-        alg3_w = choice_val3  / choice_val_sum
-        choice_val1, choice_val2, choice_val3
+        alg1_wt = max(0.05, alg1_w + choice_val1)
+        alg2_wt = max(0.05, alg2_w + choice_val2)
+        alg3_wt = max(0.05, alg3_w + choice_val3)
+        alg_sum = (alg1_wt + alg2_wt + alg3_wt)
+        alg1_w = alg1_wt/alg_sum
+        alg2_w = alg2_wt/alg_sum
+        alg3_w = alg3_wt/alg_sum
+
+        print(choice_val1)
+        print(choice_val2)
+        print(choice_val3)
+        print('-----')
+        print(alg1_w)
+        print(alg2_w)
+        print(alg3_w)
     return
 
     # Function that returns top three emotions
