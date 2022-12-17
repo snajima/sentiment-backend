@@ -1,3 +1,6 @@
+# algorithm and architecture inspired by 
+# https://github.com/bhadreshpsavani/UnderstandingNLP/blob/master/go_emotion_of_transformers_multilabel_text_classification_v2.ipynb
+
 import torch
 import transformers
 import pandas as pd
@@ -367,27 +370,22 @@ if __name__ == "__main__":
     pred_3 = run_algorithm_2_3(
         model_path_3, txt, num_words, input_length)
 
-    print("Sentence predicting:", txt)
-    print("Algorithm 1 predicted emotions:", pred_1[0], pred_1[1], pred_1[2])
-    print("Algorithm 2 predicted emotions:", pred_2[0], pred_2[1], pred_2[2])
-    print("Algorithm 3 predicted emotions:", pred_3[0], pred_3[1], pred_3[2])
-
 ############ MODEL REWEIGHING ALGORITHM ######################################
 # Choosing Weights for the Three Algorithms
 
 # Labels to output for user
- 
 def top_labels(txt):
      # Run all three algorithms
-    alg1_res = run_algorithm_1(model_path_1, txt) * -1
-    # alg2_res = run_algorithm_2_3(
-    #     model_path_2, txt, num_words, input_length)
-    # alg3_res = run_algorithm_2_3(
-    #     model_path_3, txt, num_words, input_length)
+    alg1_res = run_algorithm_1(model_path_1, txt)
+    alg2_res = run_algorithm_2_3(
+        model_path_2, txt, num_words, input_length)
+    alg3_res = run_algorithm_2_3(
+        model_path_3, txt, num_words, input_length)
     # Multiply the results of each algorithm by the weights and add everything together
-    # alg_cum = (alg1_w * alg1_res + alg2_w * alg2_res + alg3_w * alg3_res) * -1
-    # top_ordered = np.argsort(alg_cum)
-    top_ordered = np.argsort(alg1_res)
+    alg_cum = (alg1_w * alg1_res + alg2_w * alg2_res + alg3_w * alg3_res) * -1
+    # Sort in order from top results to bottom
+    top_ordered = np.argsort(alg_cum)
+    # Take the top label and use it as output
     top_label = label_cols[int(top_ordered[0])]
     return top_label
 
@@ -398,47 +396,35 @@ def update_weights(emotion, txt):
     global alg2_w
     global alg3_w
 
+    # Must rerun the algorithm here in case user changes previous date
     alg1_res = run_algorithm_1(model_path_1, txt)
     alg2_res = run_algorithm_2_3(model_path_2, txt, num_words, input_length)
     alg3_res = run_algorithm_2_3(model_path_3, txt, num_words, input_length)
-    # Store User's sentence and output as (x,y)
+
+    # Hyperparameter to adjust how fast we want the weights to change
     top_w = 1
-    # For the algorithm that had the highest amount of the top emotion, increase weight of the algorithm by its (weight of the top "emotion"
-    # - average of the emotion of the three algorithms) multiplied by x and (1-weight)
-    # (i.e. if 0.5 of happy came from this algorithm, after first iteration, with total happy of 0.9,
-    # increase weight by ((0.5-0.3) * 2/3 * x)
+
+    # Make sure that the emotion is in the list, then find the weight for the emotion in each model
     if emotion in label_cols:
         choice_index = label_cols.index(emotion)
         choice_alg1 = alg1_res[choice_index]
         choice_alg2 = alg2_res[choice_index]
         choice_alg3 = alg3_res[choice_index]
         choice_avg = (choice_alg1 + choice_alg2 + choice_alg3)/3
-        # Observed through random assignment, there was eventually convergence to one value despite none technically being best
-        # To combat this, set max between 0.05 (obtained through testing on Excel) and calculation
-        # Need to set caps for algorithms such that no algorithm will remain dead despite being top choice
-        # Through testing, observed that 0.05 was a good limit such that a new algorithm may become top within a week given right conditions
+        # Reasoning for calculations explained in final resport
         choice_val1 = (choice_alg1 - choice_avg) * top_w * alg1_w * (1 - alg1_w)
         choice_val2 = (choice_alg2 - choice_avg) * top_w * alg2_w * (1 - alg2_w)
         choice_val3 = (choice_alg3 - choice_avg) * top_w * alg3_w * (1 - alg3_w)
-        # Performing a hard reset of values is not optimal, and using momentum could lead to massive overshooting
-        # Do the same for the two other algorithms
         # Reweigh all algorithms on a scale of 0 to 1 by dividing by sum and multiplying by 3
+        # Observed through random assignment, there was eventually convergence to one value despite none technically being best
+        # Need to set caps for algorithms such that no algorithm will remain dead despite being top choice
+        # Through testing, observed that 0.05 was a good limit such that a new algorithm may become top within a week given right conditions
         alg1_wt = max(0.05, alg1_w + choice_val1)
         alg2_wt = max(0.05, alg2_w + choice_val2)
         alg3_wt = max(0.05, alg3_w + choice_val3)
+        # Ensure that the weights of each algorithm sum to 1
         alg_sum = (alg1_wt + alg2_wt + alg3_wt)
         alg1_w = alg1_wt/alg_sum
         alg2_w = alg2_wt/alg_sum
         alg3_w = alg3_wt/alg_sum
-
-        print(choice_val1)
-        print(choice_val2)
-        print(choice_val3)
-        print('-----')
-        print(alg1_w)
-        print(alg2_w)
-        print(alg3_w)
     return
-
-    # Function that returns top three emotions
-    # Function that reweighs based on chosen emotion
