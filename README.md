@@ -1,6 +1,9 @@
 # Sentiment
 An open-source backend for an app showing your mood trends based off of your journal entries.
 
+## iOS Repository
+https://github.com/snajima/sentiment-ios
+
 ## Installation
 
 This project uses the Django Rest Framework. 
